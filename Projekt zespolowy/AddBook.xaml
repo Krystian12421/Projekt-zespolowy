@@ -1,0 +1,27 @@
+﻿<Window x:Class="Projekt_zespolowy.AddBook"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Projekt_zespolowy"
+        mc:Ignorable="d"
+        Title="AddBook" Height="569" Width="859">
+    <Grid Margin="10,0,0,0">
+
+        <Label Content="Dodaj nową książkę" HorizontalAlignment="Left" Margin="287,32,0,0" VerticalAlignment="Top" Width="276" Height="71" FontSize="22"/>
+        <Button x:Name="bt_logout" Content="Wyloguj z konta" HorizontalAlignment="Left" Margin="0,149,0,0" VerticalAlignment="Top" Width="129" Click="bt_logout_Click" Height="20"/>
+        <Button Content="Wyjdź" HorizontalAlignment="Left" Margin="0,174,0,0" VerticalAlignment="Top" Width="129" Click="bt_close" Height="20"/>
+        <Grid x:Name="user_grid" Margin="300,124,405,190">
+            <TextBox x:Name="Input_Title" HorizontalAlignment="Left" Margin="0,26,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" />
+            <TextBox x:Name="Input_Autor" HorizontalAlignment="Left" Margin="0,70,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <TextBox x:Name="input_Date" HorizontalAlignment="Left" Margin="0,116,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <Button x:Name="bt_submit" Content="Potwierdz" HorizontalAlignment="Left" Margin="10,191,0,0" VerticalAlignment="Top" Width="75" Click="bt_private_user_Click" RenderTransformOrigin="-0.373,0.303"/>
+            <TextBox x:Name="Input_ISBN" HorizontalAlignment="Left" Margin="0,160,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <Label Content="Tytuł" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" FontSize="16" Margin="0,-10,0,0"/>
+            <Label Content="Autor" HorizontalAlignment="Left" Margin="0,44,0,0" VerticalAlignment="Top" Width="120" FontSize="16"/>
+            <Label Content="Rok wydania" HorizontalAlignment="Left" Margin="0,90,0,0" VerticalAlignment="Top" Width="120" FontSize="16"/>
+            <Label Content="ISBN" HorizontalAlignment="Left" Margin="0,134,0,0" VerticalAlignment="Top" Width="120" FontSize="16"/>
+        </Grid>
+        <Button x:Name="bt_show_books" Content="Wyszukiwanie książek" HorizontalAlignment="Left" Margin="0,124,0,0" VerticalAlignment="Top" Width="129" Click="bt_delete_Click" Height="20"/>
+    </Grid>
+</Window>
