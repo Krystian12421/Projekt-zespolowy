@@ -37,6 +37,7 @@ namespace Projekt_zespolowy
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Autor", Binding = new Binding("Author") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Rok wydania", Binding = new Binding("Date") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "ISBN", Binding = new Binding("ISBN") });
+            dg_data.Columns.Add(new DataGridTextColumn() { Header = "Kategorie", Binding = new Binding("Tag") });
             dg_data.AutoGenerateColumns = false;
         }
         private void fillgrid(MySqlCommand command1)
@@ -52,7 +53,7 @@ namespace Projekt_zespolowy
             {
                 MySqlConnection connection = new MySqlConnection(con.connect());
                 connection.Open();
-                MySqlCommand command1 = new MySqlCommand("SELECT Title,Author,Date,ISBN FROM books", connection);
+                MySqlCommand command1 = new MySqlCommand("SELECT Title,Author,Date,ISBN,Tag FROM books", connection);
                 fillgrid(command1);
 
                 connection.Close();
@@ -72,7 +73,69 @@ namespace Projekt_zespolowy
 
         private void bt_close(object sender, RoutedEventArgs e)
         {
+            this.Close();
+        }
 
+        private void bt_read(object sender, RoutedEventArgs e)
+        {
+            var index = dg_data.SelectedIndex;
+            if (index != -1)
+            {
+                DataRowView row = (DataRowView)dg_data.SelectedItems[0];
+                var value = row["ISBN"];
+                try
+                {
+                    MySqlConnection connection = new MySqlConnection(con.connect());
+                    connection.Open();
+                    MySqlCommand command1 = new MySqlCommand("SELECT Link FROM books WHERE ISBN = '" + value + "'", connection);
+                    var test = command1.ExecuteScalar().ToString();
+                    System.Diagnostics.Process.Start(test);
+
+                    connection.Close();
+                }
+                catch (MySqlException ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                }
+
+            }
+        }
+
+        private void bt_like(object sender, RoutedEventArgs e)
+        {
+            var index = dg_data.SelectedIndex;
+            if (index != -1)
+            {
+                DataRowView row = (DataRowView)dg_data.SelectedItems[0];
+                var value = row["ISBN"];
+                MySqlConnection connection = new MySqlConnection(con.connect());
+                connection.Open();
+                string sql_insert = "INSERT INTO favourite (login, ISBN) SELECT" + "'" + login + "','" + value + "'" + " FROM DUAL WHERE NOT EXISTS (SELECT login FROM favourite WHERE login='" + login + "' AND ISBN = '" + value + "')";
+                MySqlCommand command = new MySqlCommand(sql_insert, connection);
+                try
+                {
+                    if (command.ExecuteNonQuery() == 1)
+                    {
+                        MessageBox.Show("Pomyślnie dodałeś ksiazke do swojej biblioteki!");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Taka ksiazka istnieje juz w twojej bibliotece!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+
+            }
+        }
+
+        private void bt_show_favourite_Click(object sender, RoutedEventArgs e)
+        {
+            FavouriteBooks window = new FavouriteBooks(login);
+            window.Show();
+            this.Close();
         }
     }
 }

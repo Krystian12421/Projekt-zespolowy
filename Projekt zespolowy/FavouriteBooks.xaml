@@ -1,0 +1,16 @@
+﻿<Window x:Class="Projekt_zespolowy.FavouriteBooks"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Projekt_zespolowy"
+        mc:Ignorable="d"
+        Title="FavouriteBooks" Height="450" Width="800">
+    <Grid>
+        <DataGrid x:Name="dg_data" Margin="215,85,10,106" />
+        <Button x:Name="bt_logout" Content="Wyloguj z konta" HorizontalAlignment="Left" Margin="26,170,0,0" VerticalAlignment="Top" Width="105" Click="bt_logout_Click"/>
+        <Button Content="Wyjdź" HorizontalAlignment="Left" Margin="26,217,0,0" VerticalAlignment="Top" Width="105" Click="bt_close"/>
+        <Button x:Name="bt_show_books" Content="Wyszukiwanie Książek" HorizontalAlignment="Left" Margin="10,113,0,0" VerticalAlignment="Top" Width="136" RenderTransformOrigin="0.306,0.673" Click="bt_show_books_Click"/>
+
+    </Grid>
+</Window>
