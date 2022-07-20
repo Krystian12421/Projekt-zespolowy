@@ -7,10 +7,13 @@
         mc:Ignorable="d"
         Title="ShowBooks" Height="450" Width="800">
     <Grid>
-        <DataGrid x:Name="dg_data" Margin="215,85,10,106"/>
+        <DataGrid x:Name="dg_data" Margin="215,85,10,106" />
         <Button x:Name="bt_logout" Content="Wyloguj z konta" HorizontalAlignment="Left" Margin="26,170,0,0" VerticalAlignment="Top" Width="105" Click="bt_logout_Click"/>
         <Button Content="Wyjdź" HorizontalAlignment="Left" Margin="26,217,0,0" VerticalAlignment="Top" Width="105" Click="bt_close"/>
-        <Button x:Name="bt_add_book" Content="Dodaj książkę" HorizontalAlignment="Left" Margin="26,112,0,0" VerticalAlignment="Top" Width="105" Click="bt_logout_Click"/>
+        <Button x:Name="bt_add_book" Content="Dodaj książkę" HorizontalAlignment="Left" Margin="26,133,0,0" VerticalAlignment="Top" Width="105" Click="bt_logout_Click" RenderTransformOrigin="0.455,2.164"/>
+        <Button x:Name="bt_read1" Content="Przeczytaj" HorizontalAlignment="Left" Margin="215,347,0,0" VerticalAlignment="Top" Width="142" Click="bt_read"/>
+        <Button x:Name="bt_library" Content="Dodaj do ulubionych" HorizontalAlignment="Left" Margin="215,372,0,0" VerticalAlignment="Top" Width="142" Click="bt_like"/>
+        <Button x:Name="bt_show_favourite" Content="Wyświetl ulubione książki" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Width="162" Click="bt_show_favourite_Click"/>
 
     </Grid>
 </Window>

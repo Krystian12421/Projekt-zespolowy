@@ -28,21 +28,21 @@ namespace Projekt_zespolowy
             login = _login;
         }
 
-        private void bt_private_user_Click(object sender, RoutedEventArgs e)
+        private void bt_submit_Click(object sender, RoutedEventArgs e)
         {
                 MySqlConnection connection = new MySqlConnection(con.connect());
                 connection.Open();
-                    string sql_insert = "INSERT INTO books(Title,Author,Date,ISBN) VALUES('" + (Input_Title.Text) + "','" + Input_Autor.Text + "','" + input_Date.Text + "','" + Input_ISBN.Text + "')";
+                    string sql_insert = "INSERT INTO books(Title,Author,Date,ISBN, LINK,Tag) VALUES('" + (Input_Title.Text) + "','" + Input_Autor.Text + "','" + input_Date.Text + "','" + Input_ISBN.Text + "','" + Input_PDF.Text + "','" + Input_TAG.Text + "')";
                     MySqlCommand command = new MySqlCommand(sql_insert, connection);
                     try
                     {
                         if (command.ExecuteNonQuery() == 1)
                         {
-                            MessageBox.Show("Pomyślnie dodałeś nowy kontakt!");
+                            MessageBox.Show("Pomyślnie dodałeś nową książkę!");
                         }
                         else
                         {
-                            MessageBox.Show("Nie udało się dodać nowego kontaktu!");
+                            MessageBox.Show("Nie udało się dodać nowej książki!");
                         }
                     }
                     catch (Exception ex)

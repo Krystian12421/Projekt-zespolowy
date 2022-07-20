@@ -101,6 +101,9 @@
     <Compile Include="AddBook.xaml.cs">
       <DependentUpon>AddBook.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FavouriteBooks.xaml.cs">
+      <DependentUpon>FavouriteBooks.xaml</DependentUpon>
+    </Compile>
     <Compile Include="register_window.xaml.cs">
       <DependentUpon>register_window.xaml</DependentUpon>
     </Compile>
@@ -108,6 +111,10 @@
       <DependentUpon>ShowBooks.xaml</DependentUpon>
     </Compile>
     <Page Include="AddBook.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FavouriteBooks.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
