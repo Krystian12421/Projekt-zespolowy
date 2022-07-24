@@ -11,10 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
 using System.Data;
 using System.Text.RegularExpressions;
-using ClassLibrary1;
+using ProjektZespolowy;
 
 namespace Projekt_zespolowy
 {
@@ -23,65 +23,97 @@ namespace Projekt_zespolowy
     /// </summary>
     public partial class FavouriteBooks : Window
     {
-        mysql_connect con = new mysql_connect();
-        private string login;
-        public FavouriteBooks(string _login)
+        SqlConnect con = new SqlConnect();
+        private int UserId;
+        private bool Admin;
+        public FavouriteBooks(int _UserId, bool _Admin)
         {
             InitializeComponent();
-            login = _login;
+            UserId = _UserId;
+            Admin = _Admin;
             grid_books();
             books_sql();
         }
         private void grid_books()
         {
+            dg_data.Columns.Add(new DataGridTextColumn() { Header = "Id", Binding = new Binding("BookId") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Tytuł", Binding = new Binding("Title") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Autor", Binding = new Binding("Author") });
-            dg_data.Columns.Add(new DataGridTextColumn() { Header = "Rok wydania", Binding = new Binding("Date") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "ISBN", Binding = new Binding("ISBN") });
-            dg_data.Columns.Add(new DataGridTextColumn() { Header = "Kategorie", Binding = new Binding("Tag") });
+            dg_data.Columns.Add(new DataGridTextColumn() { Header = "Kategorie", Binding = new Binding("Tags") });
             dg_data.AutoGenerateColumns = false;
         }
-        private void fillgrid(MySqlCommand command1)
+        private void fillgrid(DataTable dt)
         {
-            MySqlDataAdapter adp = new MySqlDataAdapter(command1);
-            DataTable dt = new DataTable();
-            adp.Fill(dt);
             dg_data.ItemsSource = dt.DefaultView;
         }
+        /// <summary>
+        /// Metoda zapełniajaca DataTable wykorzystując kwerendę SQL.
+        /// </summary>
         private void books_sql()
         {
+            DataTable dt = new DataTable();
             try
             {
-                MySqlConnection connection = new MySqlConnection(con.connect());
-                connection.Open();
-                var sql_cmd = "SELECT books.Title, books.Author, books.Date, books.ISBN, books.Tag FROM books INNER JOIN favourite ON books.ISBN = favourite.ISBN WHERE favourite.login = '" + login + "'";
+                using (SqlConnection connection = con.Connection())
+                {
+                    connection.Open();
 
-                MySqlCommand command1 = new MySqlCommand(sql_cmd, connection);
-                fillgrid(command1);
+                    string sql = string.Format(String.Format(@"SELECT [dbo].books.BookId
+                                                        ,[dbo].authors.Author
+                                                        ,[dbo].books.Title
+                                                        ,[dbo].books.ISBN
+                                                        ,STRING_AGG([dbo].tags.Tag, ', ') AS Tags
+                                                        FROM [dbo].books
+                                                        JOIN [dbo].tagbook
+                                                          ON [dbo].tagbook.BookId = [dbo].books.BookId
+                                                        JOIN [dbo].authorbook
+                                                          ON [dbo].books.BookId = [dbo].authorbook.BookId
+                                                        JOIN [dbo].authors
+                                                          ON [dbo].authorbook.AuthorId = dbo.authors.AuthorId
+                                                        JOIN [dbo].tags
+                                                          ON [dbo].tags.TagId = [dbo].tagbook.TagId
+                                                        INNER JOIN [dbo].favourites
+                                                          ON [dbo].books.BookId = [dbo].favourites.BookId WHERE [dbo].favourites.UserId = {0}
+                                                        GROUP BY [dbo].books.Title,[dbo].authors.Author,[dbo].books.ISBN, [dbo].books.BookId;",UserId));
 
-                connection.Close();
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+                fillgrid(dt);
             }
-            catch (MySqlException ex)
+            catch (SqlException ex)
             {
                 MessageBox.Show(ex.ToString());
             }
         }
-
+        /// <summary>
+        /// Metoda służąca do wylogowania się 
+        /// </summary>
         private void bt_logout_Click(object sender, RoutedEventArgs e)
         {
-            AddBook window = new AddBook(login);
+            MainWindow window = new MainWindow();
             window.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Metoda zamykająca aplikację
+        /// </summary>
         private void bt_close(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
-
+        /// <summary>
+        /// Metoda służąca do powrotu do listy wszystkich książek
+        /// </summary>
         private void bt_show_books_Click(object sender, RoutedEventArgs e)
         {
-            ShowBooks window = new ShowBooks(login);
+            ShowBooks window = new ShowBooks(1, true);
             window.Show();
             this.Close();
         }

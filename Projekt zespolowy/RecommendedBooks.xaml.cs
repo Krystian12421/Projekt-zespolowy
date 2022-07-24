@@ -18,27 +18,24 @@ using ProjektZespolowy;
 namespace Projekt_zespolowy
 {
     /// <summary>
-    /// Logika interakcji dla klasy ShowBooks.xaml
+    /// Interaction logic for RecommendedBooks.xaml
     /// </summary>
-    public partial class ShowBooks : Window
+    public partial class RecommendedBooks : Window
     {
         SqlConnect con = new SqlConnect();
         private int UserId;
         private bool Admin;
-        public ShowBooks(int _UserId, bool _Admin)
+        public RecommendedBooks(int _UserId, bool _Admin)
         {
             InitializeComponent();
             UserId = _UserId;
             Admin = _Admin;
-            if (Admin == false)
-            {
-                bt_add_book.Visibility = Visibility.Collapsed;
-            }
             grid_books();
             books_sql();
         }
         private void grid_books()
         {
+            dg_data.Columns.Add(new DataGridTextColumn() { Header = "Podobieństwo", Binding = new Binding("Similarity") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Id", Binding = new Binding("BookId") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Tytuł", Binding = new Binding("Title") });
             dg_data.Columns.Add(new DataGridTextColumn() { Header = "Autor", Binding = new Binding("Author") });
@@ -63,6 +60,9 @@ namespace Projekt_zespolowy
                                                         ,[dbo].authors.Author
                                                         ,[dbo].books.Title
                                                         ,[dbo].books.ISBN
+                                                        ,[dbo].books.X
+                                                        ,[dbo].books.Y
+                                                        ,[dbo].books.Z
                                                         ,STRING_AGG([dbo].tags.Tag, ', ') AS Tags
                                                         FROM [dbo].books
                                                         JOIN [dbo].tagbook
@@ -73,7 +73,14 @@ namespace Projekt_zespolowy
                                                           ON [dbo].authorbook.AuthorId = dbo.authors.AuthorId
                                                         JOIN [dbo].tags
                                                           ON [dbo].tags.TagId = [dbo].tagbook.TagId
-                                                        GROUP BY [dbo].books.Title,[dbo].authors.Author,[dbo].books.ISBN, [dbo].books.BookId;");
+                                                        WHERE [dbo].books.BookId NOT IN
+                                                                                 (SELECT [dbo].books.BookId FROM [dbo].books
+                                                                                  JOIN [dbo].favourites
+                                                                                    ON [dbo].books.BookId = [dbo].favourites.BookId
+                                                                                  JOIN [dbo].users
+                                                                                    ON [dbo].favourites.UserId = [dbo].users.UserId)
+                                                        GROUP BY [dbo].books.Title,[dbo].authors.Author,[dbo].books.X,[dbo].books.Y,
+                                                        [dbo].books.Z,[dbo].books.ISBN, [dbo].books.BookId;");
 
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
@@ -83,6 +90,7 @@ namespace Projekt_zespolowy
                         }
                     }
                 }
+                dt = CosineSimilarity(dt);
                 fillgrid(dt);
             }
             catch (SqlException ex)
@@ -90,14 +98,65 @@ namespace Projekt_zespolowy
                 MessageBox.Show(ex.ToString());
             }
         }
-
-        private void bt_add_book_Click(object sender, RoutedEventArgs e)
+        private DataTable CosineSimilarity(DataTable dt)
         {
-            AddBook window = new AddBook(UserId, Admin);
+            double avgX = 0, avgY = 0, avgZ = 0;
+            try
+            {
+                using (SqlConnection connection = con.Connection())
+                {
+                    connection.Open();
+
+                    string sql = string.Format(@"SELECT Avg(X) AS AVGX, Avg(Y) AS AVGY, Avg(Z) AS AVGY FROM [dbo].books 
+                                                JOIN [dbo].favourites
+                                                  ON [dbo].books.BookId = [dbo].favourites.BookId
+                                                JOIN [dbo].users
+                                                  ON [dbo].favourites.UserId = [dbo].users.UserId");
+
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                avgX = reader.GetDouble(0);
+                                avgY = reader.GetDouble(1);
+                                avgZ = reader.GetDouble(2);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            dt.Columns.Add("Similarity", typeof(double));
+
+            double magnitudeAvg = Math.Sqrt(Math.Pow(avgX, 2) + Math.Pow(avgY, 2) + Math.Pow(avgZ, 2));
+            double dotProduct, magnitude, similarity;
+            double x, y, z;
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                x = Convert.ToDouble(dt.Rows[i]["X"]);
+                y = Convert.ToDouble(dt.Rows[i]["Y"]);
+                z = Convert.ToDouble(dt.Rows[i]["Z"]);
+                dotProduct = (avgX * x) + (avgY * y) + (avgZ * z);
+                magnitude = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
+                similarity = dotProduct / magnitude * magnitudeAvg;
+                dt.Rows[i]["Similarity"] = similarity;
+            }
+            return dt;
+        }
+
+        private void bt_logout_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow window = new MainWindow();
             window.Show();
             this.Close();
         }
-
         private void bt_close(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -179,24 +238,9 @@ namespace Projekt_zespolowy
 
             }
         }
-
-        private void bt_show_favourite_Click(object sender, RoutedEventArgs e)
+        private void bt_show_books_Click(object sender, RoutedEventArgs e)
         {
-            FavouriteBooks window = new FavouriteBooks(UserId, Admin);
-            window.Show();
-            this.Close();
-        }
-
-        private void bt_logout_Click(object sender, RoutedEventArgs e)
-        {
-            MainWindow window = new MainWindow();
-            window.Show();
-            this.Close();
-        }
-
-        private void bt_show_recommended_Click(object sender, RoutedEventArgs e)
-        {
-            RecommendedBooks window = new RecommendedBooks(UserId, Admin);
+            ShowBooks window = new ShowBooks(1, true);
             window.Show();
             this.Close();
         }

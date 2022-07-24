@@ -12,8 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MySql.Data.MySqlClient;
-using ClassLibrary1;
+using System.Data.SqlClient;
+using ProjektZespolowy;
 namespace Projekt_zespolowy
 {
     /// <summary>
@@ -21,7 +21,7 @@ namespace Projekt_zespolowy
     /// </summary>
     public partial class MainWindow : Window
     {
-        mysql_connect con = new mysql_connect();
+        SqlConnect con = new SqlConnect();
         public MainWindow()
         {
             InitializeComponent();
@@ -29,20 +29,42 @@ namespace Projekt_zespolowy
         /// <summary>
         /// Metoda służąca do zalogowania użytkownika
         /// </summary>
-
-
         private void bt_log_in_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                MySqlConnection connection = new MySqlConnection(con.connect());
-                connection.Open();
-                MySqlCommand command1 = new MySqlCommand("SELECT Login FROM uzytkownicy  WHERE Login = '" + input_login.Text + "'", connection);
-                MySqlCommand command2 = new MySqlCommand("SELECT Haslo FROM uzytkownicy  WHERE Login = '" + input_login.Text + "'", connection);
-                if (!(command1.ExecuteScalar() == null) && !(command2.ExecuteScalar() == null))
+                int UserId = 0;
+                bool Admin = false;
+
+                using (SqlConnection connection = con.Connection())
+                {
+                    connection.Open();
+                    
+                    string sql = string.Format(@"SELECT [dbo].[users].[UserId]
+                                ,[dbo].[users].[Admin]
+                                FROM[dbo].[users]
+                                WHERE[dbo].[users].Login = '{0}'
+                                AND [dbo].[users].Haslo = HASHBYTES('SHA2_256', CONVERT(NVARCHAR(255), '{1}'))",
+                                input_login.Text, input_password.Text);
+
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            
+                            while (reader.Read())
+                            {
+                                UserId = reader.GetInt32(0);
+                                Admin = reader.GetBoolean(1);
+                            }
+                            
+                        }
+                    }
+                }
+                if (UserId != 0)
                 {
                     MessageBox.Show("Zalogowales sie pomyslnie!");
-                    ShowBooks window = new ShowBooks(input_login.Text);
+                    ShowBooks window = new ShowBooks(UserId, Admin);
                     window.Show();
                     this.Close();
                 }
@@ -50,7 +72,6 @@ namespace Projekt_zespolowy
                 {
                     MessageBox.Show("Podaj poprawne dane lub załóż konto!");
                 }
-                connection.Close();
             }
             catch
             {

@@ -11,9 +11,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
 using System.Text.RegularExpressions;
-using ClassLibrary1;
+using ProjektZespolowy;
 
 namespace Projekt_zespolowy
 {
@@ -22,7 +22,7 @@ namespace Projekt_zespolowy
     /// </summary>
     public partial class register_window : Window
     {
-        mysql_connect con = new mysql_connect();
+        SqlConnect con = new SqlConnect();
         public register_window()
         {
             InitializeComponent();
@@ -34,41 +34,33 @@ namespace Projekt_zespolowy
             {
                 if (input_register_password.Text == input_register_password2.Text)
                 {
+                    string password = input_register_password2.Text;
+                    string login = input_register_login.Text;
                     try
                     {
-                        MySqlConnection connection = new MySqlConnection(con.connect());
-                        connection.Open();
-                        MySqlCommand command1 = new MySqlCommand("SELECT Login FROM uzytkownicy WHERE Login = '" + input_register_login.Text + "'", connection);
-                        if (command1.ExecuteScalar() == null)
+                        using (SqlConnection connection = con.Connection())
                         {
+                            string query = string.Format(@"IF NOT EXISTS (SELECT Login FROM [dbo].users WHERE Login='{0}')
+                                            BEGIN
+                                                INSERT INTO [dbo].users (Login, Haslo, Admin) VALUES ('{1}', HASHBYTES('SHA2_256', CONVERT(NVARCHAR(255),'{2}')), 0);
+                                            END;", login, login, password);
 
-                            string sql_insert = "INSERT INTO uzytkownicy(Login,Haslo) VALUES('" + (input_register_login.Text) + "','" + input_register_password.Text + "')";
-                            MySqlCommand command = new MySqlCommand(sql_insert, connection);
-                            try
+                            using (SqlCommand command = new SqlCommand(query, connection))
                             {
-                                if (command.ExecuteNonQuery() == 1)
-                                {
+                                connection.Open();
+                                int result = command.ExecuteNonQuery();
+
+                                // Check Error
+                                if (result < 0)
                                     MessageBox.Show("Konto zostało pomyślnie utworzone!");
-                                }
                                 else
-                                {
                                     MessageBox.Show("Nie udało się utworzyć konta!");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
                             }
                         }
-                        else
-                        {
-                            MessageBox.Show("Takie konto już istnieje!");
-                        }
-                        connection.Close();
                     }
-                    catch
+                    catch (SqlException ex)
                     {
-                        MessageBox.Show("Błąd podczas łączenia z bazą danych");
+                        MessageBox.Show(ex.ToString());
                     }
                 }
                 else
