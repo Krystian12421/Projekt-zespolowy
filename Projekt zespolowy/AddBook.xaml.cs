@@ -72,9 +72,12 @@ namespace Projekt_zespolowy
                     string query = string.Format(@"IF NOT EXISTS (SELECT ISBN FROM [dbo].books WHERE ISBN={0})
                                             BEGIN
                                                 INSERT INTO [dbo].books(Title, Author, ISBN, LINK, X, Y, Z) VALUES('{1}','{2}','{3}','{4}', {5}, {6}, {7});
-                                                INSERT INTO [dbo].tagbook(BookId, TagId) SELECT BookId, TagId FROM [dbo].books, [dbo].tags 
-                                                WHERE [dbo].books.ISBN = {8} AND [dbo].tags.Tag = {9};
-                                            END;", ISBN, title, author, ISBN, url, x.ToString(), y.ToString(), z.ToString(), ISBN, tag);
+                                                IF EXISTS (SELECT Tag FROM [dbo].tags WHERE [dbo].tags = {8})
+                                                BEGIN
+                                                    INSERT INTO [dbo].tagbook(BookId, TagId) SELECT BookId, TagId FROM [dbo].books, [dbo].tags 
+                                                    WHERE [dbo].books.ISBN = {9} AND [dbo].tags.Tag = {10};
+                                                END;
+                                            END;", ISBN, title, author, ISBN, url, x.ToString(), y.ToString(), z.ToString(), tag, ISBN, tag);
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
